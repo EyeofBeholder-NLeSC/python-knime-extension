@@ -26,6 +26,9 @@ my_category = knext.category(
     description="A list of Urls to the CSV files referred by the metadata file.",
 )
 class CSVWValidator:
+    """
+    This node uses the Python CSVW library (https://github.com/cldf/csvw) for csv files validation. This node assumes that the CSV files are embedded with the metadata file in a remote place. To validate, fill in the URL to the metadata file in the configuration dialog. By executing the node, if the validation passes, it will output a table that contains the list of the validated CSV files. Otherwise, this node will encounter an error.
+    """
 
     metadata_url = knext.StringParameter(
         label="Metadata File URL",
