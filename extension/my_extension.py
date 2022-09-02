@@ -22,7 +22,7 @@ my_category = knext.category(
     category=my_category,
 )
 @knext.output_table(
-    name="CSV Urls",
+    name="CSV URLs",
     description="A list of Urls to the CSV files referred by the metadata file.",
 )
 class CSVWValidator:
@@ -32,8 +32,7 @@ class CSVWValidator:
 
     metadata_url = knext.StringParameter(
         label="Metadata File URL",
-        description="Url to the metadata file",
-        default_value="https://raw.githubusercontent.com/EyeofBeholder-NLeSC/assessments-ontology/fix-metadata/metadata.json",
+        description="URL to the metadata file",
     )
 
     def configure(self, configure_context):
@@ -46,3 +45,39 @@ class CSVWValidator:
             base = result.tables[i].base
             csv_list.append(result.tables[i].url.resolve(base))
         return knext.Table.from_pandas(pd.DataFrame(csv_list, columns=["csv_urls"]))
+
+
+@knext.node(
+    name="CSV Normalizer",
+    node_type=knext.NodeType.MANIPULATOR,
+    icon_path="icon.png",
+    category=my_category,
+)
+@knext.input_table(
+    name="CSV URL", description="The URL to the CSV file that will be normalized."
+)
+@knext.output_table(name="Normalized Table", description="The normalized table.")
+class CSVNormalizer:
+    """
+    This node normalizes a CSV file based on a corresponding metadata file.
+    """
+
+    metadata_url = knext.StringParameter(
+        label="Metadata File URL",
+        description="URL to the metadata file",
+    )
+
+    def configure(self, configure_context, input_schema):
+        pass
+
+    def execute(self, execute_context, input_table):
+        result = CSVW(url=self.metadata_url, validate=True)
+        csv_url = input_table.to_pandas()["csv_urls"].iloc[0]
+        if len(result.tables) == 1:
+            return knext.Table.from_pandas(pd.DataFrame(result.tables[0]))
+        else:  # in case of multiple csv files referred by the metadata file
+            for i in range(len(result.tables)):
+                base = result.tables[i].base
+                target_url = result.tables[i].url.resolve(base)
+                if target_url == csv_url:
+                    return knext.Table.from_pandas(pd.DataFrame(result.tables[i]))
