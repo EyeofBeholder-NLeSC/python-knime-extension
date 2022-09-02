@@ -15,6 +15,16 @@ my_category = knext.category(
 )
 
 
+class CSVURLNotInMetadata(Exception):
+    """
+    Exception raised for errors in the csv normalizer node, when the input CSV URL is not found in the metadata file provided.
+    """
+
+    def __init__(self, message="The input CSV URL is not found in the metadata file."):
+        self.message = message
+        super().__init__(self.message)
+
+
 @knext.node(
     name="CSV Validator",
     node_type=knext.NodeType.MANIPULATOR,
@@ -81,3 +91,6 @@ class CSVNormalizer:
                 target_url = result.tables[i].url.resolve(base)
                 if target_url == csv_url:
                     return knext.Table.from_pandas(pd.DataFrame(result.tables[i]))
+
+        # if the input CSV URL is not found in the metadata, raise an exception
+        raise CSVURLNotInMetadata()
