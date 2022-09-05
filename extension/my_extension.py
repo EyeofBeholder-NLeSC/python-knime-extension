@@ -1,5 +1,4 @@
 import logging
-from this import d
 import knime_extension as knext
 from csvw import CSVW
 import pandas as pd

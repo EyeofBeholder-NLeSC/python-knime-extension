@@ -1,0 +1,12 @@
+name: knime
+channels:
+  - knime
+  - conda-forge
+  - defaults
+dependencies:
+  - knime-python-base
+  - python=3.9
+  - knime-extension
+  - pip:
+    - csvw
+prefix: C:\Users\qiji1\anaconda3\envs\knime
