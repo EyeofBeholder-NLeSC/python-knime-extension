@@ -13,10 +13,19 @@ After you have the correct version of KAP installed, follow the steps below to i
 
 ## Node list
 
-### CSVW Validator
+### CSV Validator
 
-This is the node(s) for reading a csv file and the corresponding metadata file as input and validating the csc file based on the [CSVW (CSV on the Web)](https://www.w3.org/TR/tabular-data-primer/) standard.
+This is the node for validating csv files based on a given metadata file describing a predefined data schema. The validation is done by following the [CSVW (CSV on the Web)](https://www.w3.org/TR/tabular-data-primer/) standard.
 
-#### Input
+- Output: a data table that stores a list of URLs to the CSV files referred by the metadata file provided
+- Configuration:
+    - Metadata File URL: the URL to the given metadata file
 
-The input files should be stored either locally or in a publicly accessible remote origin (e.g. a public GitHub repo). Note that the files should be put together, and the metadata file should be named as `<csv-file-name.csv>-metadata.json`.
+### CSV Normalizer
+
+This is the node for converting the input data table into the desired format based on a specified data schema.
+
+- Input: a data table that stored the URL to the CSV file to be normalized, there should be only one row of column "csv_urls" in the table.
+- Output: the normalized table
+- Configuration:
+    - Metadata File URL: the URL to the given metadata file
