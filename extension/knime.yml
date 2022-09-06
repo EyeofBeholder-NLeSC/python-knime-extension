@@ -2,8 +2,8 @@ name: eye_of_beholder # Will be concatenated with the group_id to an ID
 author: Ji Qi
 env_yml_path: C:/Workspace/knime_extension_python/basic/environment.yml # This is necessary for bundling, but not needed during development
 extension_module: my_extension # The .py Python module containing the nodes of your extension
-description: This extension is developed for the Eye of the Beholder project. # Human readable bundle name / description
-long_description: TBA.
+description: The Eye of Beholder Extension. # Human readable bundle name / description
+long_description: This extension is developed for the Eye of Beholder project.
 group_id: org.nlesc
 version: 0.1.0 # Version of this Python node extension
 vendor: KNIME AG, Zurich, Switzerland
