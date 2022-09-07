@@ -8,7 +8,7 @@ To use this extension, you should have the KNIME Analytics Platform (KAP) versio
 
 After you have the correct version of KAP installed, follow the steps below to install the extension:
 - Clone this repo to your machine.
-- In KAP, add the `bundled_extension` folder in this repo to KAP as a software site in *FileFile → Preferences → Install/Update → Available Software Sites*
+- In KAP, add the `bundled_extension` folder in this repo to KAP as a software site in *File → Preferences → Install/Update → Available Software Sites*
 - Install it by clicking *File → Install KNIME Extensions*, search for "eye of beholder" and install all items that show up.
 
 ## Node list
