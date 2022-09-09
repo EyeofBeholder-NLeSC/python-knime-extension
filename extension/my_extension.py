@@ -13,7 +13,9 @@ my_category = knext.category(
     icon="icon.png",
 )
 
+# TODO: create a function of URL validation (not empty)
 
+# TODO: add exceptions.py and move all exception classes there
 class CSVURLNotInMetadata(Exception):
     """
     Exception raised for errors in the csv normalizer node, when the input CSV URL is not found in the metadata file provided.
@@ -48,7 +50,11 @@ class CSVWValidator:
         pass
 
     def execute(self, execute_context):
+        # TODO: validate metadata_url 
         result = CSVW(url=self.metadata_url, validate=True)  # csvw validation
+
+        # TODO: check is_valid, if not true, raise exception
+
         csv_list = []
         for i in range(len(result.tables)):
             base = result.tables[i].base
@@ -56,6 +62,7 @@ class CSVWValidator:
         return knext.Table.from_pandas(pd.DataFrame(csv_list, columns=["csv_urls"]))
 
 
+# TODO: change the class name to CSVWReader, also in the node decorator
 @knext.node(
     name="CSV Normalizer",
     node_type=knext.NodeType.MANIPULATOR,
@@ -77,11 +84,19 @@ class CSVNormalizer:
     )
 
     def configure(self, configure_context, input_schema):
+        # TODO: check the number of rows here, if more than 1 row, raise exception
         pass
 
+
     def execute(self, execute_context, input_table):
+        # TODO: validate metadata_url
         result = CSVW(url=self.metadata_url, validate=True)
+
+        # TODO: check if csv_url is valid and point to a csv file.
         csv_url = input_table.to_pandas()["csv_urls"].iloc[0]
+        
+        # FIXME: no need to check the number of rows anymore, so just pick the first
+        #        item in the list and check if it is the desired one.
         if len(result.tables) == 1:
             return knext.Table.from_pandas(pd.DataFrame(result.tables[0]))
         else:  # in case of multiple csv files referred by the metadata file
