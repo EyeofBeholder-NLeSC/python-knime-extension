@@ -91,26 +91,22 @@ class CSVWReader:
             raise CustomError("Input table doesn't contain the 'csv_urls' column!")
 
     def execute(self, execute_context, input_table):
+        # validate the input table
+        input_df = input_table.to_pandas()
+        if input_df.shape[0] > 1:
+            raise CustomError("More than one CSVs in the input!")
+        elif input_df.shape[0] == 0:
+            raise CustomError("Input is empty!")
+        csv_url = input_df["csv_urls"].iloc[0]
+
         # validate metadata_url
         if not self.metadata_url:
             raise CustomError("Metadata URL not found!")
-
         result = CSVW(url=self.metadata_url, validate=True)
 
-        # TODO: check the number of rows here, if more than 1 row, raise exception
-        # TODO: check if csv_url is valid and point to a csv file.
-        csv_url = input_table.to_pandas()["csv_urls"].iloc[0]
-
-        # FIXME: no need to check the number of rows anymore, so just pick the first
-        #        item in the list and check if it is the desired one.
-        if len(result.tables) == 1:
-            return knext.Table.from_pandas(pd.DataFrame(result.tables[0]))
-        else:  # in case of multiple csv files referred by the metadata file
-            for i in range(len(result.tables)):
-                base = result.tables[i].base
-                target_url = result.tables[i].url.resolve(base)
-                if target_url == csv_url:
-                    return knext.Table.from_pandas(pd.DataFrame(result.tables[i]))
-
-        # if the input CSV URL is not found in the metadata, raise an exception
-        raise CustomError("This is a test!")
+        for t in result.tables:
+            base = t.base
+            target_url = t.url.resolve(base)
+            if target_url == csv_url:
+                return knext.Table.from_pandas(pd.DataFrame(t))
+        raise CustomError("The input CSV is not in the metadata file!")
