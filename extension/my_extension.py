@@ -15,15 +15,14 @@ my_category = knext.category(
 
 # TODO: create a function of URL validation (not empty)
 
-# TODO: add exceptions.py and move all exception classes there
-class CSVURLNotInMetadata(Exception):
+# TODO: define the exception class as for different errors
+class CustomError(Exception):
     """
     Exception raised for errors in the csv normalizer node, when the input CSV URL is not found in the metadata file provided.
     """
 
-    def __init__(self, message="The input CSV URL is not found in the metadata file."):
-        self.message = message
-        super().__init__(self.message)
+    def __init__(self, message):
+        super().__init__(message)
 
 
 @knext.node(
@@ -50,7 +49,7 @@ class CSVWValidator:
         pass
 
     def execute(self, execute_context):
-        # TODO: validate metadata_url 
+        # TODO: validate metadata_url
         result = CSVW(url=self.metadata_url, validate=True)  # csvw validation
 
         # TODO: check is_valid, if not true, raise exception
@@ -85,8 +84,9 @@ class CSVNormalizer:
 
     def configure(self, configure_context, input_schema):
         # TODO: check the number of rows here, if more than 1 row, raise exception
+        # TODO: check if csv_urls column is in the table
+        raise CustomError("This is a test!")
         pass
-
 
     def execute(self, execute_context, input_table):
         # TODO: validate metadata_url
@@ -94,7 +94,7 @@ class CSVNormalizer:
 
         # TODO: check if csv_url is valid and point to a csv file.
         csv_url = input_table.to_pandas()["csv_urls"].iloc[0]
-        
+
         # FIXME: no need to check the number of rows anymore, so just pick the first
         #        item in the list and check if it is the desired one.
         if len(result.tables) == 1:
@@ -107,4 +107,4 @@ class CSVNormalizer:
                     return knext.Table.from_pandas(pd.DataFrame(result.tables[i]))
 
         # if the input CSV URL is not found in the metadata, raise an exception
-        raise CSVURLNotInMetadata()
+        raise CustomError("This is a test!")
