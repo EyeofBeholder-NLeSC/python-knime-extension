@@ -83,15 +83,16 @@ class CSVNormalizer:
     )
 
     def configure(self, configure_context, input_schema):
-        # TODO: check the number of rows here, if more than 1 row, raise exception
-        # TODO: check if csv_urls column is in the table
-        raise CustomError("This is a test!")
+        # check if csv_urls column is in the table
+        if "csv_urls" not in input_schema.column_names:
+            raise CustomError("Input table doesn't contain the 'csv_urls' column!")
         pass
 
     def execute(self, execute_context, input_table):
         # TODO: validate metadata_url
         result = CSVW(url=self.metadata_url, validate=True)
 
+        # TODO: check the number of rows here, if more than 1 row, raise exception
         # TODO: check if csv_url is valid and point to a csv file.
         csv_url = input_table.to_pandas()["csv_urls"].iloc[0]
 
