@@ -2,6 +2,7 @@ import logging
 import knime_extension as knext
 from csvw import CSVW
 import pandas as pd
+from urllib import request
 
 LOGGER = logging.getLogger(__name__)
 
@@ -52,6 +53,10 @@ class CSVWValidator:
         # validate metadata_url
         if not self.metadata_url:
             raise CustomError("Metadata URL not found!")
+        req = request.Request(url=url, method="HEAD")
+        r = request.urlopen(req)
+        if "application/json" not in r.getheader("Content-Type"):
+            raise CustomError("Metadata URL not linking to a JSON-ld file!")
 
         result = CSVW(url=self.metadata_url, validate=True)  # csvw validation
         if not result.is_valid:
@@ -64,7 +69,6 @@ class CSVWValidator:
         return knext.Table.from_pandas(pd.DataFrame(csv_list, columns=["csv_urls"]))
 
 
-# TODO: change the class name to CSVWReader, also in the node decorator
 @knext.node(
     name="CSVW Reader",
     node_type=knext.NodeType.MANIPULATOR,
@@ -102,8 +106,12 @@ class CSVWReader:
         # validate metadata_url
         if not self.metadata_url:
             raise CustomError("Metadata URL not found!")
-        result = CSVW(url=self.metadata_url, validate=True)
+        req = request.Request(url=url, method="HEAD")
+        r = request.urlopen(req)
+        if "application/json" not in r.getheader("Content-Type"):
+            raise CustomError("Metadata URL not linking to a JSON-ld file!")
 
+        result = CSVW(url=self.metadata_url, validate=True)
         for t in result.tables:
             base = t.base
             target_url = t.url.resolve(base)
