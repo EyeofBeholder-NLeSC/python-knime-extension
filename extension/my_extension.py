@@ -26,7 +26,7 @@ class CustomError(Exception):
 
 
 @knext.node(
-    name="CSV Validator",
+    name="CSVW Validator",
     node_type=knext.NodeType.MANIPULATOR,
     icon_path="icon.png",
     category=my_category,
@@ -66,7 +66,7 @@ class CSVWValidator:
 
 # TODO: change the class name to CSVWReader, also in the node decorator
 @knext.node(
-    name="CSV Normalizer",
+    name="CSVW Reader",
     node_type=knext.NodeType.MANIPULATOR,
     icon_path="icon.png",
     category=my_category,
@@ -75,9 +75,9 @@ class CSVWValidator:
     name="CSV URL", description="The URL to the CSV file that will be normalized."
 )
 @knext.output_table(name="Normalized Table", description="The normalized table.")
-class CSVNormalizer:
+class CSVWReader:
     """
-    This node normalizes a CSV file based on a corresponding metadata file.
+    This node reads the CSV file from an URL and modify the data based on the metadata file by following the CSVW standard.
     """
 
     metadata_url = knext.StringParameter(
