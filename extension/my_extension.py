@@ -15,10 +15,10 @@ my_category = knext.category(
 
 # TODO: create a function of URL validation (not empty)
 
-# TODO: define the exception class as for different errors
+
 class CustomError(Exception):
     """
-    Exception raised for errors in the csv normalizer node, when the input CSV URL is not found in the metadata file provided.
+    Custom exception that will show the message from input
     """
 
     def __init__(self, message):
@@ -54,8 +54,8 @@ class CSVWValidator:
             raise CustomError("Metadata URL not found!")
 
         result = CSVW(url=self.metadata_url, validate=True)  # csvw validation
-
-        # TODO: check is_valid, if not true, raise exception
+        if not result.is_valid:
+            raise CustomError("Validation Failed!")
 
         csv_list = []
         for i in range(len(result.tables)):
