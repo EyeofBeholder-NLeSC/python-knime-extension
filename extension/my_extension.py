@@ -15,7 +15,7 @@ my_category = knext.category(
 )
 
 
-def validate_url(url, content_type):
+def validate_url_content_type(url, content_type):
     """
     Validate if an url is linked to a specified type of file.
 
@@ -63,7 +63,7 @@ class CSVWValidator:
         # validate metadata_url
         if not self.metadata_url:
             raise CustomError("Metadata URL not found!")
-        if not validate_url(self.metadata_url, "json"):
+        if not validate_url_content_type(self.metadata_url, "json"):
             raise CustomError("Metadata URL not linking to a JSON-ld file!")
 
         result = CSVW(url=self.metadata_url, validate=True)  # csvw validation
@@ -110,13 +110,13 @@ class CSVWReader:
         elif input_df.shape[0] == 0:
             raise CustomError("Input is empty!")
         csv_url = input_df["csv_urls"].iloc[0]
-        if not validate_url(csv_url, "csv"):
+        if not validate_url_content_type(csv_url, "csv"):
             raise CustomError("Input URL not linking to a CSV file!")
 
         # validate metadata_url
         if not self.metadata_url:
             raise CustomError("Metadata URL not found!")
-        if not validate_url(self.metadata_url, "json"):
+        if not validate_url_content_type(self.metadata_url, "json"):
             raise CustomError("Metadata URL not linking to a JSON-ld file!")
 
         result = CSVW(url=self.metadata_url, validate=True)
