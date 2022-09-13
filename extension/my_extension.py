@@ -3,6 +3,7 @@ import knime_extension as knext
 from csvw import CSVW
 import pandas as pd
 from urllib import request
+import json
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,16 +16,17 @@ my_category = knext.category(
 )
 
 
-def validate_url_content_type(url, content_type):
-    """
-    Validate if an url is linked to a specified type of file.
+def validate_metadata_url(url):
+    assert url, "Metadata URL is empty!"
 
-    Args:
-    - content_type[str]: string that indicate the content type, type supported: "json", "csv"
-    """
-    req = request.Request(url=url, method="HEAD")
-    r = request.urlopen(req)
-    return content_type in r.getheader("Content-Type")
+    with request.urlopen(url) as url:
+        try:
+            data = json.load(url)
+        except json.JSONDecodeError as ex:
+            # code here works for the purpose of indicating the issue
+            # but may cause confusion to not showing the exact exception
+            raise Exception("Metadata URL is invalid!") from None
+        assert "@context" in data.keys(), "Metadata URL is invalid!"
 
 
 class CustomError(Exception):
@@ -60,15 +62,10 @@ class CSVWValidator:
         pass
 
     def execute(self, execute_context):
-        # validate metadata_url
-        if not self.metadata_url:
-            raise CustomError("Metadata URL not found!")
-        if not validate_url_content_type(self.metadata_url, "json"):
-            raise CustomError("Metadata URL not linking to a JSON-ld file!")
+        validate_metadata_url(self.metadata_url)
 
-        result = CSVW(url=self.metadata_url, validate=True)  # csvw validation
-        if not result.is_valid:
-            raise CustomError("Validation Failed!")
+        result = CSVW(url=self.metadata_url, validate=True)
+        assert result.is_valid, "Validation Failed!"
 
         csv_list = []
         for i in range(len(result.tables)):
@@ -98,31 +95,23 @@ class CSVWReader:
     )
 
     def configure(self, configure_context, input_schema):
-        # check if csv_urls column is in the table
-        if "csv_urls" not in input_schema.column_names:
-            raise CustomError("Input table doesn't contain the 'csv_urls' column!")
+        assert (
+            "csv_urls" in input_schema.column_names
+        ), 'Input doesn\'t contains column "csv_urls"!'
 
     def execute(self, execute_context, input_table):
-        # validate the input table
         input_df = input_table.to_pandas()
-        if input_df.shape[0] > 1:
-            raise CustomError("More than one CSVs in the input!")
-        elif input_df.shape[0] == 0:
-            raise CustomError("Input is empty!")
+        assert input_df.shape[0] == 1, "None or more than 2 CSVs in the input!"
         csv_url = input_df["csv_urls"].iloc[0]
-        if not validate_url_content_type(csv_url, "csv"):
-            raise CustomError("Input URL not linking to a CSV file!")
 
-        # validate metadata_url
-        if not self.metadata_url:
-            raise CustomError("Metadata URL not found!")
-        if not validate_url_content_type(self.metadata_url, "json"):
-            raise CustomError("Metadata URL not linking to a JSON-ld file!")
-
+        validate_metadata_url(self.metadata_url)
         result = CSVW(url=self.metadata_url, validate=True)
+        assert result.is_valid, "Validation failed!"
+
         for t in result.tables:
             base = t.base
             target_url = t.url.resolve(base)
             if target_url == csv_url:
                 return knext.Table.from_pandas(pd.DataFrame(t))
-        raise CustomError("The input CSV is not in the metadata file!")
+
+        assert False, "Input invalid or not found in Metadata!"
