@@ -28,6 +28,8 @@ def validate_metadata_url(url):
             raise Exception("Metadata URL is invalid!") from None
         assert "@context" in data.keys(), "Metadata URL is invalid!"
 
+    return True
+
 
 class CustomError(Exception):
     """
