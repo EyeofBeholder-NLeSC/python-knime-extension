@@ -35,12 +35,11 @@ def reader():
     return r
 
 
-def test_reader_configure(reader):
-    # positive test
+def test_reader_configure_positive_test(reader):
     input_schema = Schema(ktypes=[string()], names=["csv_urls"])
-    assert reader.configure(None, input_schema)
+    reader.configure(None, input_schema)
 
-    # negative test
+def test_reader_negative_test(reader):
     input_schema = Schema(ktypes=[string()], names=["arbitrary_name"])
     with pytest.raises(
         AssertionError, match='Input doesn\'t contains column "csv_urls"!'
