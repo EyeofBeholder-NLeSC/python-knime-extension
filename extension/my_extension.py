@@ -100,6 +100,7 @@ class CSVWReader:
         assert (
             "csv_urls" in input_schema.column_names
         ), 'Input doesn\'t contains column "csv_urls"!'
+        return True
 
     def execute(self, execute_context, input_table):
         input_df = input_table.to_pandas()
