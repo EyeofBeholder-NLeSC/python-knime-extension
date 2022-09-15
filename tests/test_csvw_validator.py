@@ -18,38 +18,35 @@ class ConcreteBackend(_Backend):
         return data
 
 
-def test_validate_metadata_url():
-    # url to a valid metadata file
-    assert validate_metadata_url(
+def test_validate_metadata_url_positive():
+    validate_metadata_url(
         "https://w3c.github.io/csvw/tests/test011/tree-ops.csv-metadata.json"
     )
 
-    # empty string
-    with pytest.raises(AssertionError) as e:
+
+def test_validate_metadata_url_empty():
+    with pytest.raises(AssertionError):
         validate_metadata_url("")
 
-    # json but not json-ld
-    with pytest.raises(AssertionError) as e:
+
+def test_validate_metadata_url_not_json_ld():
+    with pytest.raises(AssertionError, match="Metadata URL is invalid!"):
         validate_metadata_url(
             "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/AFG.geo.json"
         )
 
-    # url not linking to a json file
-    with pytest.raises(Exception) as e:
+
+def test_validate_metadata_url_not_json():
+    with pytest.raises(Exception, match="Metadata URL is invalid!"):
         validate_metadata_url("https://www.google.com/maps")
 
 
-def test_validator_execute():
-    validator = cv()
+@pytest.fixture
+def validator():
+    return cv()
 
-    # negative test
-    with pytest.raises(AssertionError) as e:
-        validator.metadata_url = (
-            "https://w3c.github.io/csvw/tests/test111-metadata.json"
-        )
-        validator.execute(None)
 
-    # check output
+def test_validator_execute_positive(validator):
     knime_extension.knime_node_table._backend = ConcreteBackend()
     validator.metadata_url = "https://w3c.github.io/csvw/tests/countries.json"
     r = validator.execute(None)
@@ -59,3 +56,11 @@ def test_validator_execute():
         and r["csv_urls"].iloc[1]
         == "https://w3c.github.io/csvw/tests/country_slice.csv"
     )
+
+
+def test_validator_execute_negative(validator):
+    with pytest.raises(AssertionError, match="Validation Failed!"):
+        validator.metadata_url = (
+            "https://w3c.github.io/csvw/tests/test111-metadata.json"
+        )
+        validator.execute(None)

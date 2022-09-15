@@ -18,6 +18,9 @@ class ConcreteBackend(_Backend):
         return data
 
 
+knime_extension.knime_node_table._backend = ConcreteBackend()
+
+
 class KTable:
     def __init__(self, df):
         self.df = df
@@ -35,12 +38,12 @@ def reader():
     return r
 
 
-def test_reader_configure(reader):
-    # positive test
+def test_reader_configure_positive(reader):
     input_schema = Schema(ktypes=[string()], names=["csv_urls"])
-    assert reader.configure(None, input_schema)
+    reader.configure(None, input_schema)
 
-    # negative test
+
+def test_reader_configure_negative(reader):
     input_schema = Schema(ktypes=[string()], names=["arbitrary_name"])
     with pytest.raises(
         AssertionError, match='Input doesn\'t contains column "csv_urls"!'
@@ -48,10 +51,7 @@ def test_reader_configure(reader):
         reader.configure(None, input_schema)
 
 
-def test_reader_execute(reader):
-    knime_extension.knime_node_table._backend = ConcreteBackend()
-
-    # positive test
+def test_reader_execute_positive(reader):
     input_df = pd.DataFrame(
         {"csv_urls": ["https://w3c.github.io/csvw/tests/test011/tree-ops.csv"]}
     )
@@ -64,13 +64,15 @@ def test_reader_execute(reader):
         output_df.dtypes["GID"] == "O"
     )  # GID is int originally but read as string (object)
 
-    # negative test: no csv as input
+
+def test_reader_execute_negative_no_input(reader):
     input_df = pd.DataFrame({"csv_urls": []})
     input_table = KTable(input_df)
     with pytest.raises(AssertionError, match="None or more than 2 CSVs in the input!"):
         reader.execute(None, input_table)
 
-    # negative test: multiple csvs as input
+
+def test_reader_execute_negative_multiple_input(reader):
     input_df = pd.DataFrame(
         {
             "csv_urls": [
@@ -83,10 +85,11 @@ def test_reader_execute(reader):
     with pytest.raises(AssertionError, match="None or more than 2 CSVs in the input!"):
         reader.execute(None, input_table)
 
-    # negative test: csv not found in the metadata
+
+def test_reader_execute_negative_input_not_found(reader):
     input_df = pd.DataFrame(
         {"csv_urls": ["https://w3c.github.io/csvw/tests/countries.csv"]}
     )
     input_table = KTable(input_df)
-    with pytest.raises(AssertionError, match="Input invalid or not found in Metadata!"):
+    with pytest.raises(Exception, match="Input invalid or not found in Metadata!"):
         reader.execute(None, input_table)

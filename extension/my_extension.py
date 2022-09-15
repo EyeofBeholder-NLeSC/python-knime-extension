@@ -28,8 +28,6 @@ def validate_metadata_url(url):
             raise Exception("Metadata URL is invalid!") from None
         assert "@context" in data.keys(), "Metadata URL is invalid!"
 
-    return True
-
 
 class CustomError(Exception):
     """
@@ -100,7 +98,6 @@ class CSVWReader:
         assert (
             "csv_urls" in input_schema.column_names
         ), 'Input doesn\'t contains column "csv_urls"!'
-        return True
 
     def execute(self, execute_context, input_table):
         input_df = input_table.to_pandas()
@@ -117,4 +114,4 @@ class CSVWReader:
             if target_url == csv_url:
                 return knext.Table.from_pandas(pd.DataFrame(t))
 
-        assert False, "Input invalid or not found in Metadata!"
+        raise Exception("Input invalid or not found in Metadata!")
