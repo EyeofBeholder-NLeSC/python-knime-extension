@@ -2,6 +2,7 @@
 
 This is the repo for keeping the source code of all the KNIME nodes developed for the Eye of the Beholder project.
 
+<!--
 ## Installation
 
 To use this extension, you should have the KNIME Analytics Platform (KAP) version 4.6 or higher installed on your machine. You can download it from their [official website](https://www.knime.com/downloads).
@@ -11,6 +12,7 @@ After you have the correct version of KAP installed, follow the steps below to i
 If you don't have Git LFS (Large File Storage) installed, you should do that beforehand.
 - In KAP, add the `bundled_extension` folder in this repo to KAP as a software site in *File → Preferences → Install/Update → Available Software Sites*
 - Install it by clicking *File → Install KNIME Extensions*, search for "eye of beholder" and install all items that show up.
+-->
 
 ## Node list
 
