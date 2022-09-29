@@ -4,6 +4,9 @@ from csvw import CSVW
 import pandas as pd
 from urllib import request
 import json
+import sys
+
+sys.path.insert(0, "./arguement_mining")
 
 LOGGER = logging.getLogger(__name__)
 
