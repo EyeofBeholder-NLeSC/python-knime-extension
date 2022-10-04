@@ -1,4 +1,4 @@
 org.nlesc.eye_of_beholder: # {group_id}.{name} from the knime.yml
-  src: /home/jiqi/workspace/python-knime-extension/extension/ # Path to folder containing the extension files
-  conda_env_path: /home/jiqi/miniconda3/envs/knime/ # Path to the Python environment to use
+  src: C:\Workspace\python_projects\python-knime-extension\extension # Path to folder containing the extension files
+  conda_env_path: C:\Users\qiji1\anaconda3\envs\knime # Path to the Python environment to use
   debug_mode: true # Optional line, if set to true, it will always use the latest changes of execute/configure, when that method is used within the KNIME Analytics Platform

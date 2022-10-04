@@ -164,4 +164,10 @@ class AMScoreComputer:
         df_prods, df_items = compute_scores(
             self.data_url, self.njobs, self.nchunks, self.batch_size, self.th_textrank
         )
+
+        # FIXME: temp fix, should happen in the compute_scores function
+        df_items[["style", "ranks"]] = df_items[["style", "ranks"]].applymap(
+            lambda x: json.dumps(x)
+        )
+
         return knext.Table.from_pandas(df_items), knext.Table.from_pandas(df_prods)

@@ -18,7 +18,7 @@ def readability(doc):
     return doc
 
 
-nlp = spacy.load('en_core_web_md')
+nlp = spacy.load("en_core_web_md")
 nlp.add_pipe("textrank", last=True)
 nlp.add_pipe("readability", last=True)
 
@@ -32,7 +32,7 @@ def apply_readability(doc):
 
 
 def chunker(iterable, total_length, chunksize):
-    x = [iterable[pos: pos + chunksize] for pos in range(0, total_length, chunksize)]
+    x = [iterable[pos : pos + chunksize] for pos in range(0, total_length, chunksize)]
     return x
 
 
@@ -49,55 +49,70 @@ def process_chunk(texts, bs, trt):
 
 
 def preprocess_parallel(texts, n_jobs, chunksize, batchsize, trt):
-    executor = Parallel(n_jobs=n_jobs, backend='multiprocessing', prefer="processes")
+    executor = Parallel(n_jobs=n_jobs, backend="multiprocessing", prefer="processes")
     do = delayed(process_chunk)
-    tasks = (do(chunk, batchsize, trt) for chunk in chunker(texts, len(texts), chunksize=chunksize))
+    tasks = (
+        do(chunk, batchsize, trt)
+        for chunk in chunker(texts, len(texts), chunksize=chunksize)
+    )
     result = executor(tasks)
     return flatten(result)
 
 
 def compute_scores(file, nc=8, cs=100, bs=20, trt=0.0, savename=""):
     start_time = time.time()
-    if not os.path.exists(file):
-        raise ValueError('Cannot find file:', file)
-    else:
-        print('Computing scores for', file, 'with nc:', nc, 'cs:', cs, 'bs:', bs, 'trt:', trt)
-    df = pd.read_json(file, compression='gzip', lines=True)
-    df['reviewText'] = df['reviewText'].fillna('')
-    results = preprocess_parallel(df['reviewText'].astype(str), nc, cs, bs, trt)
-    df['ranks'] = [x[0] for x in results]
-    df['n_tokens'] = [len(x[0]) for x in results]
-    df['readability'] = [x[1][0] for x in results]
+    # if not os.path.exists(file):
+    #     raise ValueError('Cannot find file:', file)
+    # else:
+    #     print('Computing scores for', file, 'with nc:', nc, 'cs:', cs, 'bs:', bs, 'trt:', trt)
+    df = pd.read_json(file, compression="gzip", lines=True)
+    df["reviewText"] = df["reviewText"].fillna("")
+    results = preprocess_parallel(df["reviewText"].astype(str), nc, cs, bs, trt)
+    df["ranks"] = [x[0] for x in results]
+    df["n_tokens"] = [len(x[0]) for x in results]
+    df["readability"] = [x[1][0] for x in results]
     # create df_prods with prods sorted for load balancing over nc
     # based on total number of tokens per product
-    df_prod = pd.DataFrame(df[['asin', 'n_tokens']].groupby(['asin']).sum()).reset_index()
+    df_prod = pd.DataFrame(
+        df[["asin", "n_tokens"]].groupby(["asin"]).sum()
+    ).reset_index()
     df_prod = df_prod.rename(columns={"asin": "prod"})
-    indices = list(df_prod.sort_values(by=['n_tokens'], ascending=False).index.values)
+    indices = list(df_prod.sort_values(by=["n_tokens"], ascending=False).index.values)
     ni = [indices[i:][::nc] for i in range(nc)]
     nj = [item for i in ni for item in i]
-    df_prod['newi'] = None
+    df_prod["newi"] = None
     for indx, value in enumerate(nj):
-        df_prod.at[value, 'newi'] = indx
-    df_prods = pd.DataFrame(df_prod.sort_values(by=['newi']).reset_index()['prod'])
+        df_prod.at[value, "newi"] = indx
+    df_prods = pd.DataFrame(df_prod.sort_values(by=["newi"]).reset_index()["prod"])
     print("--- %s seconds ---" % (time.time() - start_time))
     return df_prods, df
 
 
 if __name__ == "__main__":
     file = str(input("Please provide path to data file (json(.gz)): "))
-    print('Your logical CPU count is:', psutil.cpu_count(logical=True))
+    print("Your logical CPU count is:", psutil.cpu_count(logical=True))
     nc = int(input("Define number of jobs (optional, default is 8): ") or 8)
     cs = int(input("Define number of chunks (optional, default is 100): ") or 100)
     bs = int(input("Define batch size (optional, default is 20): ") or 20)
-    trt = float(input("Define threshold for textrank token collection "
-                "(optional, default is 0.0): ") or 0.0)
-    savename = str(input("Please provide the name of the (existing) output folder to which you " +
-                         "want to save the output: " or ""))
+    trt = float(
+        input(
+            "Define threshold for textrank token collection "
+            "(optional, default is 0.0): "
+        )
+        or 0.0
+    )
+    savename = str(
+        input(
+            "Please provide the name of the (existing) output folder to which you "
+            + "want to save the output: "
+            or ""
+        )
+    )
     df_prods, df = compute_scores(file, nc, cs, bs, trt)
     try:
         bn = os.path.basename(file)
-        output_path = os.path.join(savename, bn[:bn.index('.')])
+        output_path = os.path.join(savename, bn[: bn.index(".")])
         df_prods.to_pickle(output_path + "_prods.pkl", compression="gzip")
         df.to_csv(output_path + "_reviews.csv", compression="gzip")
     except Exception:
-        print('Failed to save the output of compute_scores')
+        print("Failed to save the output of compute_scores")
