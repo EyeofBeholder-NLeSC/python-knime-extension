@@ -8,6 +8,8 @@ import sys
 
 sys.path.insert(0, "./arguement_mining")
 
+from arguement_mining.compute_scores2 import compute_scores
+
 LOGGER = logging.getLogger(__name__)
 
 my_category = knext.category(
@@ -118,3 +120,48 @@ class CSVWReader:
                 return knext.Table.from_pandas(pd.DataFrame(t))
 
         raise Exception("Input invalid or not found in Metadata!")
+
+
+@knext.node(
+    name="Arguement Mining - Score Computer",
+    node_type=knext.NodeType.MANIPULATOR,
+    icon_path="icon.png",
+    category=my_category,
+)
+@knext.output_table(
+    name="Table of items",
+    description="TBA",
+)
+@knext.output_table(
+    name="Table of products",
+    description="TBA",
+)
+class AMScoreComputer:
+    data_url = knext.StringParameter(label="URL to data file", description="TBA")
+
+    njobs = knext.IntParameter(
+        label="Number of jobs", default_value=8, description="TBA"
+    )
+
+    nchunks = knext.IntParameter(
+        label="Number of chunks", default_value=100, description="TBA"
+    )
+
+    batch_size = knext.IntParameter(
+        label="Batch size", default_value=20, description="TBA"
+    )
+
+    th_textrank = knext.DoubleParameter(
+        label="Threshold for textrank token collection",
+        default_value=0.0,
+        description="TBA",
+    )
+
+    def configure(self, configure_context):
+        pass
+
+    def execute(self, execute_context):
+        df_prods, df_items = compute_scores(
+            self.data_url, self.njobs, self.nchunks, self.batch_size, self.th_textrank
+        )
+        return knext.Table.from_pandas(df_items), knext.Table.from_pandas(df_prods)
